@@ -891,10 +891,22 @@ target_link_libraries(
   OpenSSL::Crypto
 )
 
+
+
+if(WIN32)
+  # FIXME: hack to ensure the correct libclang_rt is used
+  set(CLANG_RT_BUILTINS "${clang_resource_dir}/lib/windows/libclang_rt.builtins-x86_64.a")
+
+  # FIXME: ensure 128-bit unsigned ops are exported, they are not exported with -Wl,--whole-archive
+  target_sources(jank_exe_phase_1 PRIVATE
+    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/compiler_rt_exports.def"
+  )
+endif()
+
 if(WIN32)
   target_link_libraries(
     jank_exe_phase_1 PUBLIC
-    ${jank_link_whole_start} libclang_rt.builtins-x86_64.a ${jank_link_whole_end}
+    ${jank_link_whole_start} "${CLANG_RT_BUILTINS}" ${jank_link_whole_end}
     # Required at least for mkstemp.
     ${jank_link_whole_start} libmingwex.a ${jank_link_whole_end}
 
@@ -1013,7 +1025,8 @@ if(jank_test)
   if(WIN32)
     target_link_libraries(
       jank_test_exe PUBLIC
-      ${jank_link_whole_start} libclang_rt.builtins-x86_64.a ${jank_link_whole_end}
+      ${jank_link_whole_start} "${CLANG_RT_BUILTINS}" -${jank_link_whole_end}
+
       # Required at least for mkstemp
       ${jank_link_whole_start} libmingwex.a ${jank_link_whole_end}
 

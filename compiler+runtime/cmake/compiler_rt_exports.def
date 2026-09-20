@@ -1,0 +1,3 @@
+EXPORTS
+    __udivti3
+    __umodti3
